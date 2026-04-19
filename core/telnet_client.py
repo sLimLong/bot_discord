@@ -2,20 +2,24 @@ import telnetlib
 import asyncio
 
 class TelnetClient:
-    def __init__(self, host, port, password):
+    def __init__(self, host: str, port: int, password: str, timeout=5):
         self.host = host
         self.port = port
         self.password = password
+        self.timeout = timeout
 
-    def _send_blocking(self, command: str):
-        tn = telnetlib.Telnet(self.host, self.port, timeout=5)
+    def _send_blocking(self, command: str) -> str:
+        tn = telnetlib.Telnet(self.host, self.port, self.timeout)
+
         tn.read_until(b"password: ")
-        tn.write(self.password.encode("utf-8") + b"\n")
-        tn.read_until(b"> ")
-        tn.write(command.encode("utf-8") + b"\n")
-        output = tn.read_until(b"> ", timeout=5).decode("utf-8")
+        tn.write(self.password.encode() + b"\n")
+
+        tn.write(command.encode() + b"\n")
+        tn.write(b"\n")
+
+        output = tn.read_very_eager().decode("utf-8", errors="ignore")
         tn.close()
         return output
 
-    async def send(self, command: str):
+    async def send(self, command: str) -> str:
         return await asyncio.to_thread(self._send_blocking, command)

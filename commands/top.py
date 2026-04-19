@@ -53,7 +53,7 @@ async def setup(bot):
                 f"**#{i} — {p.get('name', 'Unknown')}**\n"
                 f"💰 Очки: {p.get('score', 0)}\n"
                 f"🎮 Уровень: {p.get('level', 0)}\n"
-                f"💀 Убийства: {p.get('kills', 0)}\n"
+                f"💀 Убийства: {p.get('kills', {}).get('zombies', 0)}\n"
                 f"⚰ Смерти: {p.get('deaths', 0)}\n"
                 f"-------------------------\n"
             )

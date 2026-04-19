@@ -1,5 +1,8 @@
 import aiohttp
 from bot.servers import SERVERS
+from core.storage import update_player
+from core.telnet_client import TelnetClient
+
 
 
 # ============================
@@ -15,17 +18,19 @@ class APIClient:
     async def _request(self, method: str, endpoint: str, params=None, data=None):
         url = f"{self.url}{endpoint}"
 
-        # Эндпоинты, которые требуют авторизации
-        auth_endpoints = (
+        # Нормализуем endpoint, чтобы избежать 403 из-за пробелов/слэшей
+        clean_endpoint = endpoint.split("?")[0].rstrip("/").strip()
+
+        auth_endpoints = {
             "/api/blacklist",
             "/api/addblacklist",
             "/api/removeblacklist",
             "/api/executeconsolecommand",
             "/api/gmsg",
-        )
+        }
 
-        # Авторизация только если endpoint начинается с auth_endpoints
-        if any(endpoint.startswith(ep) for ep in auth_endpoints):
+        # Авторизация только для защищённых эндпоинтов
+        if clean_endpoint in auth_endpoints:
             headers = {
                 "accept": "application/json",
                 "x-sdtd-api-tokenname": self.tokenname,
@@ -97,26 +102,45 @@ async def get_all_players(server_id: int):
     data = await api.get_players()
 
     players = data.get("data", {}).get("players", [])
-
     result = []
 
     for p in players:
-        result.append({
+        platform = p.get("platformId") or {}
+        kills = p.get("kills") or {}
+        banned = p.get("banned") or {}
+
+        player = {
             "entityId": p.get("entityId"),
             "name": p.get("name"),
-            "steamid": p.get("platformId", {}).get("userId"),
-            "platform": p.get("platformId", {}).get("platformId"),
+
+            "steamid": platform.get("userId"),
+            "platform": platform.get("platformId"),
+
+            # platformId как словарь — важно для storage
+            "platformId": platform,
+
             "online": p.get("online", False),
+            "ip": p.get("ip"),
             "ping": p.get("ping"),
+            "position": p.get("position"),
+
             "level": p.get("level"),
             "health": p.get("health"),
             "stamina": p.get("stamina"),
             "score": p.get("score"),
             "deaths": p.get("deaths"),
-            "kills": p.get("kills", {}).get("zombies", 0),
-            "position": p.get("position"),
-            "ip": p.get("ip"),
-        })
+
+            # kills всегда словарь
+            "kills": {
+                "zombies": kills.get("zombies", 0),
+                "players": kills.get("players", 0)
+            },
+
+            "banned": banned.get("banActive", False),
+        }
+
+        update_player(server_id, player)
+        result.append(player)
 
     return result
 
@@ -155,11 +179,8 @@ async def get_ban_list(server_id: int):
     api = get_client(server_id)
     data = await api.get_blacklist()
 
-    # Твой формат: {"data": [ {...}, {...} ], "meta": {...}}
-    if isinstance(data, dict) and isinstance(data.get("data"), list):
-        bans = data["data"]
-    else:
-        bans = []
+    # Формат: {"data": [ {...}, {...} ], "meta": {...}}
+    bans = data.get("data", []) if isinstance(data.get("data"), list) else []
 
     result = []
 
@@ -181,5 +202,13 @@ async def get_ban_list(server_id: int):
 # ============================
 
 async def send_command(server_id: int, cmd: str):
-    api = get_client(server_id)
-    return await api.execute(cmd)
+    telnet = get_telnet(server_id)
+    return await telnet.send(cmd)
+
+def get_telnet(server_id: int):
+    cfg = SERVERS[server_id]
+    return TelnetClient(
+        host=cfg["telnet_host"],
+        port=cfg["telnet_port"],
+        password=cfg["telnet_password"]
+    )
