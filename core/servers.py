@@ -1,18 +1,18 @@
 SERVERS = {
     1: {
         "name": "Server #1",
-        "url": "http://46.72.238.58:8100",
-        "username": "dsfj290yuvcx",
-        "password": "Pkbvfdnwhgfd",
+        "url": "",
+        "username": "",
+        "password": "",
 
         "telnet_host": "46.72.238.58",
-        "telnet_port": "6056",
-        "telnet_password": "w1d4d8Fm24Wc",
+        "telnet_port": "",
+        "telnet_password": "",
     },
 
     2: {
         "name": "Server #2",
-        "url": "http://46.72.238.58:8200",
+        "url": "",
         "username": "admin",
         "password": "pass2",
 
