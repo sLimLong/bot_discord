@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from core.server_manager import get_status
 
@@ -5,18 +6,44 @@ async def setup(bot):
     @bot.command(name="status")
     async def status_cmd(ctx, server_id: int = 1):
         try:
-            s = await get_status(server_id)
-        except Exception as e:
-            await ctx.send(f"❌ Ошибка: {e}")
-            return
+            status = await get_status(server_id)
 
-        text = (
-            f"📡 **Статус сервера {server_id}**\n"
-            f"🕒 Игровое время: {s['days']} дн., {s['hours']:02d}:{s['minutes']:02d}\n"
-            f"👥 Игроков онлайн: {s['players']}\n"
-            f"👹 Враги: {s['hostiles']}\n"
-            f"🐺 Животные: {s['animals']}\n"
-            f"⏱ Серверное время: {s['server_time']}\n"
-        )
+            # Если сервер не ответил
+            if not status or status.get("players") is None:
+                await ctx.send(f"❌ Сервер #{server_id} сейчас **OFFLINE** или не отвечает.")
+                return
 
-        await ctx.send(text)
+            embed = discord.Embed(
+                title=f"📡 Статус сервера #{server_id}",
+                color=discord.Color.green()
+            )
+            embed.add_field(
+                name="🌎 Флора сервера\n",
+                value=(
+                    f"-------------------------------------\n"
+                    f"👥 Игроки онлайн: {status['players']}\n"
+                    f"-------------------------------------\n"
+                    f"🐺 Животные: {status['animals']}\n"
+                    f"-------------------------------------\n"
+                    f"💀 Зомби: {status['hostiles']}\n"
+                    f"-------------------------------------\n"                    
+                ),
+                inline=False
+            )            
+
+            # Игровое время
+            embed.add_field(
+                name="⏳ Игровое время\n",
+                value=(
+                    f"-------------------------------------\n"
+                    f"📅 Дни: {status['game_days']}\n"
+                    f"-------------------------------------\n"
+                    f"🕒 Время: {status['game_hours']}:{status['game_minutes']}\n"
+                ),
+                inline=False
+            )
+
+            await ctx.send(embed=embed)
+
+        except Exception:
+            await ctx.send(f"❌ Сервер #{server_id} сейчас **OFFLINE** или не отвечает.")

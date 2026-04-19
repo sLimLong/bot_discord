@@ -1,0 +1,44 @@
+{
+    "players": {
+        "76561198883268383": {
+            "name": "RAY",
+            "score": 3961,
+            "level": 104,
+            "kills": 4204,
+            "deaths": 30,
+            "last_update": "2026-04-19T17:08:31.706723"
+        },
+        "76561198812298206": {
+            "name": "Потрошила",
+            "score": 1046,
+            "level": 74,
+            "kills": 1064,
+            "deaths": 0,
+            "last_update": "2026-04-19T17:08:31.716618"
+        },
+        "76561197993822461": {
+            "name": ".:BenThrottle:.",
+            "score": 9454,
+            "level": 267,
+            "kills": 9717,
+            "deaths": 65,
+            "last_update": "2026-04-19T17:08:31.726113"
+        },
+        "76561198136266064": {
+            "name": "Leprekon",
+            "score": 112,
+            "level": 39,
+            "kills": 246,
+            "deaths": 59,
+            "last_update": "2026-04-19T17:08:31.733953"
+        },
+        "76561198323730201": {
+            "name": "Michail Rebron",
+            "score": 7732,
+            "level": 210,
+            "kills": 7757,
+            "deaths": 3,
+            "last_update": "2026-04-19T17:08:31.738282"
+        }
+    }
+}

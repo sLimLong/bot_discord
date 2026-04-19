@@ -24,19 +24,19 @@ async def setup(bot):
 
         # сортировка по режиму
         if mode == "score":
-            players = sorted(players, key=lambda p: p["score"], reverse=True)
+            players = sorted(players, key=lambda p: p.get("score", 0), reverse=True)
             title = "💰 Общий баланс очков"
 
         elif mode == "level":
-            players = sorted(players, key=lambda p: p["level"], reverse=True)
+            players = sorted(players, key=lambda p: p.get("level", 0), reverse=True)
             title = "🏆 Топ по уровню"
 
         elif mode == "kills":
-            players = sorted(players, key=lambda p: p["kills"]["zombies"], reverse=True)
+            players = sorted(players, key=lambda p: p.get("kills", 0), reverse=True)
             title = "💀 Топ по убийствам зомби"
 
         elif mode == "deaths":
-            players = sorted(players, key=lambda p: p["deaths"], reverse=True)
+            players = sorted(players, key=lambda p: p.get("deaths", 0), reverse=True)
             title = "⚰ Топ по смертям"
 
         else:
@@ -50,11 +50,11 @@ async def setup(bot):
 
         for i, p in enumerate(top10, start=1):
             text += (
-                f"**#{i} — {p['name']}**\n"
-                f"💰 Очки: {p['score']}\n"
-                f"🎮 Уровень: {p['level']}\n"
-                f"💀 Убийства: {p['kills']['zombies']}\n"
-                f"⚰ Смерти: {p['deaths']}\n"
+                f"**#{i} — {p.get('name', 'Unknown')}**\n"
+                f"💰 Очки: {p.get('score', 0)}\n"
+                f"🎮 Уровень: {p.get('level', 0)}\n"
+                f"💀 Убийства: {p.get('kills', 0)}\n"
+                f"⚰ Смерти: {p.get('deaths', 0)}\n"
                 f"-------------------------\n"
             )
 

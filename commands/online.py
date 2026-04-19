@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from core.server_manager import get_online_players
 
@@ -6,32 +7,47 @@ async def setup(bot):
     async def online_cmd(ctx, server_id: int = 1):
         try:
             players = await get_online_players(server_id)
-        except Exception as e:
-            await ctx.send(f"❌ Ошибка: {e}")
-            return
 
-        if not players:
-            await ctx.send(f"👥 На сервере {server_id} сейчас никого нет.")
-            return
+            if not players:
+                await ctx.send(f"👥 На сервере {server_id} сейчас никого нет.")
+                return
 
-        text = f"👥 **Онлайн на сервере {server_id}: {len(players)} игрок(ов)**\n\n"
-
-        for p in players:
-            name = p["name"]
-            level = p["level"]
-            ping = p["ping"]
-            steam = p["platformId"]["userId"]
-            hp = p["health"]
-            stamina = int(p["stamina"])
-            zkills = p["kills"]["zombies"]
-            deaths = p["deaths"]
-
-            text += (
-                f"**{name}** (Lv {level})\n"
-                f"🏃 HP: {hp} | STA: {stamina}\n"
-                f"🔫 ZKills: {zkills} | 💀 Deaths: {deaths}\n"
-                f"📡 Ping: {ping} | SteamID: `{steam}`\n"
-                f"-------------------------\n"
+            embed = discord.Embed(
+                title=f"Онлайн игроки — Сервер {server_id}",
+                color=discord.Color.green()
             )
 
-        await ctx.send(text)
+            for p in players:
+                name = p.get("name", "Unknown")
+                level = p.get("level", "—")
+                ping = p.get("ping", "—")
+                health = p.get("health", "—")
+                stamina = p.get("stamina", "—")
+                score = p.get("score", "—")
+                deaths = p.get("deaths", "—")
+                kills = p.get("kills", 0)
+
+                pos = p.get("position")
+                if pos:
+                    pos_str = f"X: {pos.get('x'):.1f}, Y: {pos.get('y'):.1f}, Z: {pos.get('z'):.1f}"
+                else:
+                    pos_str = "—"
+
+                embed.add_field(
+                    name=f"{name} (LvL {level})",
+                    value=(
+                        f"🏹 **Kills:** {kills}\n"
+                        f"💀 **Deaths:** {deaths}\n"
+                        f"💠 **Score:** {score}\n"
+                        f"❤️ **HP:** {health}\n"
+                        f"⚡ **Stamina:** {stamina}\n"
+                        f"📡 **Ping:** {ping}\n"
+                        f"📍 **Pos:** {pos_str}"
+                    ),
+                    inline=False
+                )
+
+            await ctx.send(embed=embed)
+
+        except Exception as e:
+            await ctx.send(f"❌ Ошибка: {e}")
